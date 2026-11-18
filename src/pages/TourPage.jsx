@@ -38,18 +38,24 @@ const DEFAULT_KIND_STYLE = {
 
 export default function TourPage() {
   const viewerRef = useRef(null)
+  const view = useVsmStore((state) => state.view)
+  const setView = useVsmStore((state) => state.setView)
   const nodes = useVsmStore((state) => state.flows[state.view].nodes)
   const selectedNodeId = useVsmStore((state) => state.selectedNodeId)
   const setSelectedNodeId = useVsmStore((state) => state.setSelectedNodeId)
-  const [isWorkshop2, setIsWorkshop2] = useState(false)
   const [activeSpotId, setActiveSpotId] = useState(null)
 
-  const spots = useMemo(() => {
-    const visible = isWorkshop2
-      ? nodes.filter((node) => (node.data.load ?? 0) < 90)
-      : nodes
+  // Цех 1 = состояние «До», Цех 2 = состояние «После».
+  // Панорама определяется текущим режимом стора.
+  const isWorkshop2 = view === 'after'
 
-    return visible.map((node, index) => ({
+  // При смене режима сбрасываем выбранную точку интереса.
+  useEffect(() => {
+    setActiveSpotId(null)
+  }, [view])
+
+  const spots = useMemo(() => {
+    return nodes.map((node, index) => ({
       id: node.id,
       label: node.data.label ?? `Этап ${index + 1}`,
       kind: node.data.kind ?? 'operation',
@@ -59,7 +65,7 @@ export default function TourPage() {
       pitch: 0,
       hfov: 72,
     }))
-  }, [nodes, isWorkshop2])
+  }, [nodes])
 
   const activeSpot = spots.find((spot) => spot.id === activeSpotId) ?? spots[0] ?? null
 
@@ -164,7 +170,7 @@ export default function TourPage() {
               type="button"
               className="btn btn--primary"
               style={{ width: '100%', justifyContent: 'center', marginTop: 14 }}
-              onClick={() => setIsWorkshop2((prev) => !prev)}
+              onClick={() => setView(isWorkshop2 ? 'before' : 'after')}
             >
               <ArrowRightLeft size={15} aria-hidden="true" />
               {isWorkshop2 ? 'Вернуться в Цех 1' : 'Перейти в Цех 2'}
