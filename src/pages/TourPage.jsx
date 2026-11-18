@@ -113,11 +113,19 @@ export default function TourPage() {
 
   const focusSpot = useCallback((spot) => {
     setActiveSpotId(spot.id)
+    setSelectedNodeId(spot.id)
     viewerRef.current?.lookAt(spot.pitch, spot.yaw, spot.hfov, 900)
-  }, [])
+  }, [setSelectedNodeId])
 
   // Реверс-синхронизация: переход из редактора «Показать в 3D».
+  // Срабатывает только при монтировании тура, чтобы клик по POI в самом туре
+  // не «съедал» глобальный selectedNodeId до перехода в редактор.
+  const appliedPendingFocus = useRef(false)
+
   useEffect(() => {
+    if (appliedPendingFocus.current) return
+    appliedPendingFocus.current = true
+
     if (!selectedNodeId) return
     const spot = spots.find((item) => item.id === selectedNodeId)
     if (spot) focusSpot(spot)

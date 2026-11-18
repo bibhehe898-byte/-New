@@ -1,5 +1,5 @@
 import { CloudUpload, Layers, MousePointer2, Plus, RotateCcw, Save, ScanEye, Workflow, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ReactFlow, {
   Background,
@@ -79,8 +79,39 @@ function FlowCanvas({
   onNodeClick,
 }) {
   const { setCenter } = useReactFlow()
+  const selectedNodeId = useVsmStore((state) => state.selectedNodeId)
+  const setSelectedNodeId = useVsmStore((state) => state.setSelectedNodeId)
+  const [highlightedId, setHighlightedId] = useState(null)
+
+  // Синхронизация «Тур -> Редактор»: центрируемся и подсвечиваем выбранный узел.
+  useEffect(() => {
+    if (!selectedNodeId) return
+    const node = nodes.find((item) => item.id === selectedNodeId)
+    if (node) {
+      const x = node.position.x + (node.width ?? 0) / 2
+      const y = node.position.y + (node.height ?? 0) / 2
+      setCenter(x, y, { zoom: 1, duration: 800 })
+      setHighlightedId(node.id)
+    }
+    setSelectedNodeId(null)
+  }, [selectedNodeId, nodes, setCenter, setSelectedNodeId])
+
+  // Автосброс подсветки, чтобы она не «залипала» после ручных действий.
+  useEffect(() => {
+    if (!highlightedId) return
+    const timer = setTimeout(() => setHighlightedId(null), 2500)
+    return () => clearTimeout(timer)
+  }, [highlightedId])
+
+  const displayNodes = useMemo(() => {
+    if (!highlightedId) return nodes
+    return nodes.map((node) =>
+      node.id === highlightedId ? { ...node, selected: true } : node,
+    )
+  }, [nodes, highlightedId])
 
   const handleNodeClick = (event, node) => {
+    setHighlightedId(null)
     const x = node.position.x + (node.width ?? 0) / 2
     const y = node.position.y + (node.height ?? 0) / 2
     setCenter(x, y, { zoom: 1, duration: 800 })
@@ -91,7 +122,7 @@ function FlowCanvas({
     <div className="editor-canvas">
       <ReactFlow
         key={view}
-        nodes={nodes}
+        nodes={displayNodes}
         edges={edges}
         nodeTypes={NODE_TYPES}
         onNodesChange={onNodesChange}
