@@ -12,8 +12,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [agreed, setAgreed] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
 
     if (!agreed) {
@@ -22,8 +23,33 @@ export default function LoginPage() {
     }
 
     setError('')
-    login()
-    navigate('/', { replace: true })
+    setLoading(true)
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: loginValue, password }),
+      })
+
+      if (response.status === 401) {
+        setError('Неверный логин или пароль.')
+        return
+      }
+
+      if (!response.ok) {
+        setError('Не удалось войти. Попробуйте позже.')
+        return
+      }
+
+      const data = await response.json()
+      login(data.access_token)
+      navigate('/', { replace: true })
+    } catch {
+      setError('Не удалось подключиться к серверу.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -82,9 +108,9 @@ export default function LoginPage() {
           </p>
         )}
 
-        <button type="submit" className="btn btn--primary login-submit">
+        <button type="submit" className="btn btn--primary login-submit" disabled={loading}>
           <LogIn size={16} aria-hidden="true" />
-          Войти
+          {loading ? 'Вход…' : 'Войти'}
         </button>
       </form>
     </div>

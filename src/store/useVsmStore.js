@@ -2,6 +2,9 @@ import { addEdge, applyEdgeChanges, applyNodeChanges, MarkerType } from 'reactfl
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { createEdge, initialAfterFlow, initialBeforeFlow } from '../data/vsmData'
+import { useAuthStore } from './useAuthStore'
+
+const API_URL = 'http://127.0.0.1:8000'
 
 const cloneFlow = (flow) => structuredClone(flow)
 
@@ -30,7 +33,7 @@ const NEW_EDGE_DEFAULTS = {
   style: { stroke: 'rgba(148, 178, 204, 0.42)', strokeWidth: 1.6 },
 }
 
-export const useVsmStore = create(persist((set) => ({
+export const useVsmStore = create(persist((set, get) => ({
   view: 'before',
   flows: INITIAL_FLOWS,
 
@@ -104,4 +107,55 @@ export const useVsmStore = create(persist((set) => ({
         [state.view]: cloneFlow(state.view === 'before' ? initialBeforeFlow : initialAfterFlow),
       },
     })),
+
+  saveFlowToServer: async () => {
+    const { view, flows } = get()
+    const token = useAuthStore.getState().token
+
+    const response = await fetch(`${API_URL}/api/flows/${view}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        nodes: flows[view].nodes,
+        edges: flows[view].edges,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error('Не удалось сохранить граф на сервере')
+    }
+
+    return response.json()
+  },
+
+  loadFlowFromServer: async () => {
+    const { view } = get()
+    const token = useAuthStore.getState().token
+
+    const response = await fetch(`${API_URL}/api/flows/${view}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      const error = new Error('Не удалось загрузить граф с сервера')
+      error.status = response.status
+      throw error
+    }
+
+    const data = await response.json()
+
+    set((state) => ({
+      flows: {
+        ...state.flows,
+        [view]: { nodes: data.nodes, edges: data.edges },
+      },
+    }))
+
+    return data
+  },
 }), { name: 'kataxone-vsm', partialize: (state) => ({ flows: state.flows }) }))

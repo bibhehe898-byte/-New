@@ -1,5 +1,5 @@
-import { Layers, MousePointer2, Plus, RotateCcw, Save, Workflow, X } from 'lucide-react'
-import { useState } from 'react'
+import { CloudUpload, Layers, MousePointer2, Plus, RotateCcw, Save, Workflow, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import ReactFlow, {
   Background,
   Controls,
@@ -129,8 +129,26 @@ export default function EditorPage() {
   const resetFlow = useVsmStore((state) => state.resetFlow)
   const onConnect = useVsmStore((state) => state.onConnect)
   const updateNode = useVsmStore((state) => state.updateNode)
+  const saveFlowToServer = useVsmStore((state) => state.saveFlowToServer)
+  const loadFlowFromServer = useVsmStore((state) => state.loadFlowFromServer)
 
   const [editing, setEditing] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [saveStatus, setSaveStatus] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    loadFlowFromServer().catch((error) => {
+      // 404 — граф ещё не сохранён: оставляем дефолтные данные из стора.
+      if (cancelled || error?.status === 404) return
+      console.warn('Не удалось загрузить граф с сервера:', error)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [view, loadFlowFromServer])
 
   const meta = FLOW_META[view]
 
@@ -153,6 +171,19 @@ export default function EditorPage() {
       cost: Math.max(0, toValidNumber(editing.cost)),
     })
     setEditing(null)
+  }
+
+  const handleSaveToServer = async () => {
+    setSaving(true)
+    setSaveStatus(null)
+    try {
+      await saveFlowToServer()
+      setSaveStatus({ type: 'ok', text: 'Граф сохранён на сервере' })
+    } catch {
+      setSaveStatus({ type: 'error', text: 'Не удалось сохранить граф' })
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -198,6 +229,15 @@ export default function EditorPage() {
               <Plus size={16} aria-hidden="true" />
               Добавить этап
             </button>
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={handleSaveToServer}
+              disabled={saving}
+            >
+              <CloudUpload size={16} aria-hidden="true" />
+              {saving ? 'Сохранение…' : 'Сохранить на сервер'}
+            </button>
           </div>
         </header>
 
@@ -218,6 +258,14 @@ export default function EditorPage() {
             <MousePointer2 size={13} aria-hidden="true" />
             {meta.subtitle}. Delete — удалить выбранное.
           </span>
+          {saveStatus && (
+            <span
+              role="status"
+              style={{ color: saveStatus.type === 'ok' ? '#199e70' : '#e5484d' }}
+            >
+              {saveStatus.text}
+            </span>
+          )}
         </div>
 
         <FlowCanvas
