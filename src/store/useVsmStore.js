@@ -1,5 +1,6 @@
 import { addEdge, applyEdgeChanges, applyNodeChanges, MarkerType } from 'reactflow'
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import { createEdge, initialAfterFlow, initialBeforeFlow } from '../data/vsmData'
 
 const cloneFlow = (flow) => structuredClone(flow)
@@ -29,7 +30,7 @@ const NEW_EDGE_DEFAULTS = {
   style: { stroke: 'rgba(148, 178, 204, 0.42)', strokeWidth: 1.6 },
 }
 
-export const useVsmStore = create((set) => ({
+export const useVsmStore = create(persist((set) => ({
   view: 'before',
   flows: INITIAL_FLOWS,
 
@@ -103,4 +104,4 @@ export const useVsmStore = create((set) => ({
         [state.view]: cloneFlow(state.view === 'before' ? initialBeforeFlow : initialAfterFlow),
       },
     })),
-}))
+}), { name: 'kataxone-vsm', partialize: (state) => ({ flows: state.flows }) }))

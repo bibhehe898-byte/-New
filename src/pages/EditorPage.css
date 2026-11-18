@@ -199,6 +199,16 @@
   background: #7dd3fc;
 }
 
+@media (max-width: 768px) {
+  .editor-page .page-subtitle {
+    display: none;
+  }
+
+  .editor-hint {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
   .editor-page {
     padding: 16px 14px;

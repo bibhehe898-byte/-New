@@ -244,21 +244,19 @@
   border-left: 1px solid var(--border);
 }
 
-@media (max-width: 760px) {
+@media (max-width: 768px) {
   .tour-overlay {
-    padding: 14px;
-  }
-
-  /* На мобильных карточка закрывает верх — уводим зум вниз. */
-  .tour-page .pnlm-controls-container {
-    top: auto;
-    right: 14px;
-    bottom: 64px;
+    align-items: flex-end;
+    padding: 12px;
   }
 
   .tour-panel {
     width: 100%;
-    max-height: calc(100% - 110px);
+    max-height: 46vh;
+  }
+
+  .tour-card {
+    background: rgba(8, 13, 19, 0.6);
   }
 
   .tour-hints {
@@ -266,9 +264,7 @@
   }
 
   .tour-source {
-    right: 14px;
-    bottom: 14px;
-    max-width: 200px;
+    display: none;
   }
 }
 
