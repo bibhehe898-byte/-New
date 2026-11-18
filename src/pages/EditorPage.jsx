@@ -1,5 +1,6 @@
-import { CloudUpload, Layers, MousePointer2, Plus, RotateCcw, Save, Workflow, X } from 'lucide-react'
+import { CloudUpload, Layers, MousePointer2, Plus, RotateCcw, Save, ScanEye, Workflow, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import ReactFlow, {
   Background,
   Controls,
@@ -119,6 +120,7 @@ function FlowCanvas({
 }
 
 export default function EditorPage() {
+  const navigate = useNavigate()
   const view = useVsmStore((state) => state.view)
   const nodes = useVsmStore((state) => state.flows[state.view].nodes)
   const edges = useVsmStore((state) => state.flows[state.view].edges)
@@ -131,6 +133,7 @@ export default function EditorPage() {
   const updateNode = useVsmStore((state) => state.updateNode)
   const saveFlowToServer = useVsmStore((state) => state.saveFlowToServer)
   const loadFlowFromServer = useVsmStore((state) => state.loadFlowFromServer)
+  const setSelectedNodeId = useVsmStore((state) => state.setSelectedNodeId)
 
   const [editing, setEditing] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -184,6 +187,12 @@ export default function EditorPage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleShowIn3D = () => {
+    setSelectedNodeId(editing.id)
+    setEditing(null)
+    navigate('/')
   }
 
   return (
@@ -353,9 +362,19 @@ export default function EditorPage() {
               </label>
 
               <button
+                type="button"
+                className="btn"
+                style={{ width: '100%', justifyContent: 'center', marginTop: 4 }}
+                onClick={handleShowIn3D}
+              >
+                <ScanEye size={15} aria-hidden="true" />
+                Показать в 3D
+              </button>
+
+              <button
                 type="submit"
                 className="btn btn--primary"
-                style={{ width: '100%', justifyContent: 'center', marginTop: 4 }}
+                style={{ width: '100%', justifyContent: 'center', marginTop: 8 }}
               >
                 <Save size={15} aria-hidden="true" />
                 Сохранить

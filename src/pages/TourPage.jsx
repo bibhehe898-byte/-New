@@ -8,7 +8,7 @@ import {
   Shield,
   ZoomIn,
 } from 'lucide-react'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import PannellumViewer from '../components/PannellumViewer'
 import { TOUR_CONFIG } from '../data/tourData'
 import { useVsmStore } from '../store/useVsmStore'
@@ -39,6 +39,8 @@ const DEFAULT_KIND_STYLE = {
 export default function TourPage() {
   const viewerRef = useRef(null)
   const nodes = useVsmStore((state) => state.flows[state.view].nodes)
+  const selectedNodeId = useVsmStore((state) => state.selectedNodeId)
+  const setSelectedNodeId = useVsmStore((state) => state.setSelectedNodeId)
   const [isWorkshop2, setIsWorkshop2] = useState(false)
   const [activeSpotId, setActiveSpotId] = useState(null)
 
@@ -109,10 +111,18 @@ export default function TourPage() {
     viewerRef.current = viewer
   }, [])
 
-  const focusSpot = (spot) => {
+  const focusSpot = useCallback((spot) => {
     setActiveSpotId(spot.id)
     viewerRef.current?.lookAt(spot.pitch, spot.yaw, spot.hfov, 900)
-  }
+  }, [])
+
+  // Реверс-синхронизация: переход из редактора «Показать в 3D».
+  useEffect(() => {
+    if (!selectedNodeId) return
+    const spot = spots.find((item) => item.id === selectedNodeId)
+    if (spot) focusSpot(spot)
+    setSelectedNodeId(null)
+  }, [selectedNodeId, spots, focusSpot, setSelectedNodeId])
 
   const kindStyle = activeSpot
     ? KIND_STYLES[activeSpot.kind] ?? DEFAULT_KIND_STYLE
@@ -157,11 +167,12 @@ export default function TourPage() {
             <div className="tour-card">
               <div
                 aria-hidden="true"
+                className="tour-card__gradient"
                 style={{
                   width: '100%',
                   aspectRatio: '2 / 1',
                   borderRadius: 12,
-                  background: kindStyle.background,
+                  backgroundImage: kindStyle.background,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

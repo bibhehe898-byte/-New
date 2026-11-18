@@ -36,8 +36,10 @@ const NEW_EDGE_DEFAULTS = {
 export const useVsmStore = create(persist((set, get) => ({
   view: 'before',
   flows: INITIAL_FLOWS,
+  selectedNodeId: null,
 
   setView: (view) => set({ view }),
+  setSelectedNodeId: (id) => set({ selectedNodeId: id }),
 
   onNodesChange: (changes) =>
     set((state) =>

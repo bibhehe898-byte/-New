@@ -96,12 +96,7 @@ export default function DashboardPage() {
   const savingsRub = Math.max(0, (beforeCycleTime - afterCycleTime) * 60 * 5000)
 
   const currentNodes = flows[view].nodes
-  const bottleneck = currentNodes.length
-    ? currentNodes.reduce(
-        (max, node) => ((node.data.load ?? 0) > (max.data.load ?? -1) ? node : max),
-        currentNodes[0],
-      )
-    : null
+  const bottlenecks = currentNodes.filter((node) => (node.data.load ?? 0) > 90)
 
   const leadRow = rows.find((row) => row.key === 'leadTime')
   const leadReduction =
@@ -293,54 +288,65 @@ export default function DashboardPage() {
           Быстрая симуляция
         </h2>
         <p className="viz-subtitle">
-          Двигайте ползунок — время цикла узкого места меняется на лету, и показатели пересчитываются.
+          Двигайте ползунки — время цикла узких мест (загрузка &gt; 90%) меняется на лету,
+          и показатели пересчитываются.
         </p>
 
-        {bottleneck && (
-          <div style={{ marginTop: 18 }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: 10,
-              }}
-            >
-              <span style={{ fontSize: 13, color: 'var(--text-2)' }}>
-                {bottleneck.data.label}
-              </span>
-              <strong
-                style={{
-                  fontSize: 13.5,
-                  color: 'var(--text)',
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                {bottleneck.data.cycleTime} мин
-              </strong>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="20"
-              step="1"
-              value={bottleneck.data.cycleTime}
-              onChange={(event) =>
-                updateNode(bottleneck.id, { cycleTime: Number(event.target.value) })
-              }
-              style={{ width: '100%', accentColor: 'var(--accent)' }}
-            />
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginTop: 6,
-              }}
-            >
-              <span style={{ fontSize: 11, color: 'var(--muted)' }}>0 мин</span>
-              <span style={{ fontSize: 11, color: 'var(--muted)' }}>20 мин</span>
-            </div>
+        {bottlenecks.length > 0 && (
+          <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {bottlenecks.map((node) => (
+              <div key={node.id}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 10,
+                  }}
+                >
+                  <span style={{ fontSize: 13, color: 'var(--text-2)' }}>
+                    {node.data.label}
+                  </span>
+                  <strong
+                    style={{
+                      fontSize: 13.5,
+                      color: 'var(--text)',
+                      fontVariantNumeric: 'tabular-nums',
+                    }}
+                  >
+                    {node.data.cycleTime} мин
+                  </strong>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="20"
+                  step="1"
+                  value={node.data.cycleTime}
+                  onChange={(event) =>
+                    updateNode(node.id, { cycleTime: Number(event.target.value) })
+                  }
+                  style={{ width: '100%', accentColor: 'var(--accent)' }}
+                />
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 6,
+                  }}
+                >
+                  <span style={{ fontSize: 11, color: 'var(--muted)' }}>0 мин</span>
+                  <span style={{ fontSize: 11, color: 'var(--muted)' }}>20 мин</span>
+                </div>
+              </div>
+            ))}
           </div>
+        )}
+
+        {bottlenecks.length === 0 && (
+          <p className="viz-subtitle" style={{ marginTop: 14 }}>
+            Узких мест с загрузкой выше 90% в текущем потоке нет.
+          </p>
         )}
       </section>
     </div>

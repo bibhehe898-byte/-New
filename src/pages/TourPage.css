@@ -48,6 +48,16 @@
   animation: tour-hotspot-pulse 2.2s ease-out infinite;
 }
 
+/* Второе расширяющееся кольцо — эффект «радара» со сдвигом по фазе. */
+.tour-hotspot::before {
+  content: '';
+  position: absolute;
+  inset: -14px;
+  border: 1px solid rgba(56, 189, 248, 0.32);
+  border-radius: 50%;
+  animation: tour-hotspot-pulse 2.2s ease-out 1.1s infinite;
+}
+
 @keyframes tour-hotspot-pulse {
   0% {
     opacity: 0.8;
@@ -60,8 +70,33 @@
   }
 }
 
+/* Анимированный «текущий» градиент в карточке точки интереса. */
+.tour-card__gradient {
+  background-size: 200% 200%;
+  animation: tour-gradient-shift 6s ease infinite;
+}
+
+@keyframes tour-gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .tour-hotspot::after {
+  .tour-hotspot::after,
+  .tour-hotspot::before {
+    animation: none;
+  }
+
+  .tour-card__gradient {
     animation: none;
   }
 }
