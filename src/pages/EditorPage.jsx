@@ -5,6 +5,7 @@ import ReactFlow, {
   Controls,
   MiniMap,
   ReactFlowProvider,
+  useReactFlow,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import VsmNode from '../components/VsmNode'
@@ -62,6 +63,61 @@ const inputStyle = {
   outline: 'none',
 }
 
+const toValidNumber = (value) => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+function FlowCanvas({
+  view,
+  nodes,
+  edges,
+  onNodesChange,
+  onEdgesChange,
+  onConnect,
+  onNodeClick,
+}) {
+  const { setCenter } = useReactFlow()
+
+  const handleNodeClick = (event, node) => {
+    const x = node.position.x + (node.width ?? 0) / 2
+    const y = node.position.y + (node.height ?? 0) / 2
+    setCenter(x, y, { zoom: 1, duration: 800 })
+    onNodeClick(node)
+  }
+
+  return (
+    <div className="editor-canvas">
+      <ReactFlow
+        key={view}
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={NODE_TYPES}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onNodeClick={handleNodeClick}
+        fitView
+        fitViewOptions={{ padding: 0.22, minZoom: 0.25, maxZoom: 1 }}
+        minZoom={0.2}
+        maxZoom={1.8}
+        deleteKeyCode={['Backspace', 'Delete']}
+        className={`vsm-flow vsm-flow--${view}`}
+      >
+        <Background variant="dots" gap={22} size={1.4} color="rgba(148, 178, 204, 0.2)" />
+        <MiniMap
+          pannable
+          zoomable
+          maskColor="rgba(5, 9, 14, 0.72)"
+          nodeColor={() => (view === 'before' ? '#3987e5' : '#199e70')}
+          nodeStrokeWidth={0}
+        />
+        <Controls showInteractive={false} />
+      </ReactFlow>
+    </div>
+  )
+}
+
 export default function EditorPage() {
   const view = useVsmStore((state) => state.view)
   const nodes = useVsmStore((state) => state.flows[state.view].nodes)
@@ -78,7 +134,7 @@ export default function EditorPage() {
 
   const meta = FLOW_META[view]
 
-  const handleNodeClick = (_, node) => {
+  const handleNodeClick = (node) => {
     setEditing({
       id: node.id,
       label: node.data.label ?? '',
@@ -92,9 +148,9 @@ export default function EditorPage() {
     event.preventDefault()
     updateNode(editing.id, {
       label: editing.label,
-      cycleTime: Number(editing.cycleTime) || 0,
-      load: Number(editing.load) || 0,
-      cost: Number(editing.cost) || 0,
+      cycleTime: Math.max(0, toValidNumber(editing.cycleTime)),
+      load: Math.min(100, Math.max(0, toValidNumber(editing.load))),
+      cost: Math.max(0, toValidNumber(editing.cost)),
     })
     setEditing(null)
   }
@@ -164,34 +220,15 @@ export default function EditorPage() {
           </span>
         </div>
 
-        <div className="editor-canvas">
-          <ReactFlow
-            key={view}
-            nodes={nodes}
-            edges={edges}
-            nodeTypes={NODE_TYPES}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onNodeClick={handleNodeClick}
-            fitView
-            fitViewOptions={{ padding: 0.22, minZoom: 0.25, maxZoom: 1 }}
-            minZoom={0.2}
-            maxZoom={1.8}
-            deleteKeyCode={['Backspace', 'Delete']}
-            className={`vsm-flow vsm-flow--${view}`}
-          >
-            <Background variant="dots" gap={22} size={1.4} color="rgba(148, 178, 204, 0.2)" />
-            <MiniMap
-              pannable
-              zoomable
-              maskColor="rgba(5, 9, 14, 0.72)"
-              nodeColor={() => (view === 'before' ? '#3987e5' : '#199e70')}
-              nodeStrokeWidth={0}
-            />
-            <Controls showInteractive={false} />
-          </ReactFlow>
-        </div>
+        <FlowCanvas
+          view={view}
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onNodeClick={handleNodeClick}
+        />
 
         {editing && (
           <div style={overlayStyle} onClick={() => setEditing(null)}>

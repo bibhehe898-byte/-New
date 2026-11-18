@@ -40,10 +40,10 @@ const formatChange = (change) => {
   return `${rounded > 0 ? '+' : '−'}${Math.abs(rounded)}%`
 }
 
-function buildImprovementPlan(flows) {
-  const sumCycleTime = (flow) =>
-    flow.nodes.reduce((sum, item) => sum + (item.data.cycleTime ?? 0), 0)
+const sumCycleTime = (flow) =>
+  flow.nodes.reduce((sum, item) => sum + (item.data.cycleTime ?? 0), 0)
 
+function buildImprovementPlan(flows) {
   const beforeTime = sumCycleTime(flows.before)
   const afterTime = sumCycleTime(flows.after)
   const bottlenecks = flows.before.nodes.filter((node) => (node.data.load ?? 0) > 90)
@@ -87,7 +87,21 @@ function downloadImprovementPlan(flows) {
 
 export default function DashboardPage() {
   const flows = useVsmStore((state) => state.flows)
+  const view = useVsmStore((state) => state.view)
+  const updateNode = useVsmStore((state) => state.updateNode)
   const rows = buildRows(flows)
+
+  const beforeCycleTime = sumCycleTime(flows.before)
+  const afterCycleTime = sumCycleTime(flows.after)
+  const savingsRub = Math.max(0, (beforeCycleTime - afterCycleTime) * 60 * 5000)
+
+  const currentNodes = flows[view].nodes
+  const bottleneck = currentNodes.length
+    ? currentNodes.reduce(
+        (max, node) => ((node.data.load ?? 0) > (max.data.load ?? -1) ? node : max),
+        currentNodes[0],
+      )
+    : null
 
   const leadRow = rows.find((row) => row.key === 'leadTime')
   const leadReduction =
@@ -152,6 +166,34 @@ export default function DashboardPage() {
               После
             </li>
           </ul>
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 16,
+            flexWrap: 'wrap',
+            marginTop: 16,
+            padding: '14px 18px',
+            borderRadius: 14,
+            border: '1px solid rgba(52, 211, 153, 0.3)',
+            background: 'rgba(52, 211, 153, 0.08)',
+          }}
+        >
+          <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Экономия, руб/год</span>
+          <strong
+            style={{
+              fontSize: 'clamp(22px, 3vw, 30px)',
+              fontWeight: 650,
+              letterSpacing: '-0.02em',
+              color: 'var(--good)',
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            {formatValue(savingsRub, 0)} ₽
+          </strong>
         </div>
 
         <ul className="dumbbell">
@@ -244,6 +286,62 @@ export default function DashboardPage() {
             </table>
           </details>
         </div>
+      </section>
+
+      <section className="viz-card" aria-labelledby="sim-title">
+        <h2 id="sim-title" className="viz-title">
+          Быстрая симуляция
+        </h2>
+        <p className="viz-subtitle">
+          Двигайте ползунок — время цикла узкого места меняется на лету, и показатели пересчитываются.
+        </p>
+
+        {bottleneck && (
+          <div style={{ marginTop: 18 }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 10,
+              }}
+            >
+              <span style={{ fontSize: 13, color: 'var(--text-2)' }}>
+                {bottleneck.data.label}
+              </span>
+              <strong
+                style={{
+                  fontSize: 13.5,
+                  color: 'var(--text)',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {bottleneck.data.cycleTime} мин
+              </strong>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="20"
+              step="1"
+              value={bottleneck.data.cycleTime}
+              onChange={(event) =>
+                updateNode(bottleneck.id, { cycleTime: Number(event.target.value) })
+              }
+              style={{ width: '100%', accentColor: 'var(--accent)' }}
+            />
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: 6,
+              }}
+            >
+              <span style={{ fontSize: 11, color: 'var(--muted)' }}>0 мин</span>
+              <span style={{ fontSize: 11, color: 'var(--muted)' }}>20 мин</span>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   )
