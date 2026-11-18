@@ -1,0 +1,213 @@
+:root {
+  color-scheme: dark;
+
+  --bg: #070b10;
+  --surface: #0d141c;
+  --surface-2: #111b26;
+  --surface-3: #16222f;
+  --border: rgba(148, 178, 204, 0.14);
+  --border-strong: rgba(148, 178, 204, 0.26);
+  --text: #e8eef5;
+  --text-2: #b6c5d6;
+  --muted: #8296ab;
+  --accent: #38bdf8;
+  --accent-strong: #0ea5e9;
+  --amber: #fbbf24;
+  --good: #34d399;
+  --bad: #fb7185;
+  --radius: 14px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  font-family: var(--font);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  background:
+    radial-gradient(1100px 620px at 12% -12%, rgba(56, 189, 248, 0.1), transparent 62%),
+    radial-gradient(900px 520px at 92% -4%, rgba(251, 191, 36, 0.06), transparent 60%),
+    var(--bg);
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 178, 204, 0.22);
+  border: 2px solid var(--bg);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* --- Общие элементы страниц --- */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.page-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.page-title {
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+  margin-top: 6px;
+  max-width: 720px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.page-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* --- Кнопки --- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 550;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.btn:focus-visible,
+.segmented button:focus-visible,
+.hotspot-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn--primary {
+  background: linear-gradient(180deg, #38bdf8, #0ea5e9);
+  border-color: transparent;
+  color: #04121c;
+}
+
+.btn--primary:hover {
+  background: linear-gradient(180deg, #54c8fb, #1cb0f0);
+  color: #04121c;
+}
+
+/* --- Сегментированный переключатель --- */
+
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.segmented button {
+  height: 30px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 550;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.segmented button:hover {
+  color: var(--text);
+}
+
+.segmented button.is-active {
+  background: rgba(56, 189, 248, 0.16);
+  color: #a5e3ff;
+  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.25);
+}
+
+@media (max-width: 640px) {
+  .page-actions {
+    width: 100%;
+  }
+}

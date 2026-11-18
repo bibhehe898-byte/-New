@@ -1,0 +1,283 @@
+.tour-page {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background: #05080c;
+}
+
+.pannellum-viewer.tour-viewer {
+  width: 100%;
+  height: 100%;
+}
+
+/* Контролы Pannellum по умолчанию слева — уводим их вправо,
+   чтобы не конфликтовать с информационной панелью. */
+.tour-page .pnlm-controls-container {
+  top: 16px;
+  right: 16px;
+  left: auto;
+  margin-top: 0;
+}
+
+.tour-page .pnlm-controls {
+  border-color: rgba(7, 11, 16, 0.5);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* При кастомном cssClass Pannellum не добавляет стандартные классы,
+   поэтому точку интереса стилизуем сами. */
+.tour-hotspot {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #eaf7ff;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.95);
+  box-shadow:
+    0 0 0 5px rgba(56, 189, 248, 0.18),
+    0 0 20px rgba(56, 189, 248, 0.6);
+  cursor: pointer;
+}
+
+.tour-hotspot::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border: 1px solid rgba(56, 189, 248, 0.55);
+  border-radius: 50%;
+  animation: tour-hotspot-pulse 2.2s ease-out infinite;
+}
+
+@keyframes tour-hotspot-pulse {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.75);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-hotspot::after {
+    animation: none;
+  }
+}
+
+.tour-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: flex-start;
+  padding: 24px;
+  pointer-events: none;
+}
+
+.tour-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(370px, 100%);
+  max-height: calc(100% - 96px);
+  overflow-y: auto;
+  padding-right: 2px;
+  pointer-events: auto;
+}
+
+.tour-card {
+  padding: 20px;
+  border: 1px solid rgba(148, 178, 204, 0.2);
+  border-radius: 16px;
+  background: rgba(8, 13, 19, 0.78);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(16px);
+}
+
+.tour-title {
+  font-size: clamp(22px, 2.4vw, 27px);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.tour-copy {
+  margin-top: 8px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.tour-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.tour-badges span {
+  padding: 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 11.5px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tour-spots__title {
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tour-spots ul {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hotspot-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-2);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.hotspot-item svg {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+
+.hotspot-item span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.hotspot-item strong {
+  font-size: 13px;
+  font-weight: 550;
+}
+
+.hotspot-item small {
+  margin-top: 2px;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.hotspot-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
+.hotspot-item.is-active {
+  border-color: rgba(56, 189, 248, 0.28);
+  background: rgba(56, 189, 248, 0.1);
+  color: #d6f1ff;
+}
+
+.hotspot-item.is-active svg {
+  color: var(--accent);
+}
+
+.tour-source {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  max-width: 280px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(8, 13, 19, 0.68);
+  backdrop-filter: blur(10px);
+  font-size: 10.5px;
+  color: var(--muted);
+  text-align: right;
+}
+
+.tour-hints {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(8, 13, 19, 0.68);
+  backdrop-filter: blur(10px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.tour-hints span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.tour-hints span + span {
+  padding-left: 8px;
+  border-left: 1px solid var(--border);
+}
+
+@media (max-width: 760px) {
+  .tour-overlay {
+    padding: 14px;
+  }
+
+  /* На мобильных карточка закрывает верх — уводим зум вниз. */
+  .tour-page .pnlm-controls-container {
+    top: auto;
+    right: 14px;
+    bottom: 64px;
+  }
+
+  .tour-panel {
+    width: 100%;
+    max-height: calc(100% - 110px);
+  }
+
+  .tour-hints {
+    display: none;
+  }
+
+  .tour-source {
+    right: 14px;
+    bottom: 14px;
+    max-width: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tour-card {
+    padding: 16px;
+  }
+
+  .tour-spots {
+    display: none;
+  }
+}
