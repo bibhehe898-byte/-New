@@ -36,3 +36,23 @@ npm run build     # production-сборка
 npm run preview   # предпросмотр собранной версии
 npm run lint      # проверка кода (oxlint)
 ```
+
+## Бэкенд
+
+REST API на Python: аутентификация и хранение графов КПСЦ.
+
+### Технологии
+
+- [FastAPI](https://fastapi.tiangolo.com) — веб-фреймворк
+- [SQLite](https://www.sqlite.org) — база данных
+- [SQLAlchemy](https://www.sqlalchemy.org) — ORM
+- [JWT](https://jwt.io) — авторизация по токенам (`Authorization: Bearer <token>`)
+
+### Запуск
+
+```bash
+pip install -r backend/requirements.txt
+uvicorn backend.main:app --reload
+```
+
+Сервер поднимется на `http://127.0.0.1:8000` (интерактивная документация API — `/docs`).
